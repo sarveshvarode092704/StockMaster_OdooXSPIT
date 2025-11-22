@@ -1,6 +1,6 @@
 <?php
 session_start();
-include("../config/db.php");
+include("../../config/db.php");
 
 $message = "";
 
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Redirect by role (optional)
             if ($user["role"] === "admin") {
-                header("Location: admin_dashboard.php");
+                header("Location: ../index.php");
             } elseif ($user["role"] === "manager") {
                 header("Location: manager_dashboard.php");
             } else {

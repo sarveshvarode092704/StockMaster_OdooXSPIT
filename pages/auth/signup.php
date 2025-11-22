@@ -1,6 +1,6 @@
 <?php
 // Include DB connection file
-include("../config/db.php");
+include("../../config/db.php");
 
 // Message variable for success or error
 $message = "";
@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               class="w-full p-3 rounded-lg bg-[var(--dark1)] text-white border border-[var(--light)]
                      focus:border-[var(--purple)] focus:ring-[var(--purple)] focus:ring-2 mb-6">
         <option value="admin">Admin</option>
-        <option value="manager">Manager</option>
+        <option value="manager">Manager</option> 
         <option value="staff">Staff</option>
       </select>
 

@@ -2,7 +2,13 @@
 if (!session_id()) {
     session_start();
 }
+
+if (!isset($_SESSION["user_id"])) {
+    header("Location: ./auth/login.php");
+    exit();
+}
 ?>
+
 
 <!-- SIDEBAR --><aside class="fixed left-0 top-0 w-64 h-screen bg-[#1e202c] border-r border-[#31323e] flex flex-col py-6">
 
@@ -30,7 +36,7 @@ if (!session_id()) {
 
     <!-- LOGOUT -->
     <div class="px-6 mt-auto">
-        <a href="login.php" 
+        <a href="./auth/logout.php" 
            class="block w-full text-center py-2 bg-[#60519b] text-white rounded-md hover:bg-[#4f4181] transition">
             Log Out
         </a>
