@@ -60,7 +60,7 @@ if (!isset($_SESSION["user_id"])) {
     <div class="px-6 mt-auto">
         <a href="./auth/logout.php" 
            class="block w-full text-center py-2 bg-[#60519b] text-white rounded-md hover:bg-[#4f4181] transition">
-            Log Out
+            Log Outtt
         </a>
     </div>
 
