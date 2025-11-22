@@ -8,6 +8,7 @@ if (!isset($_SESSION["user_id"])) {
     exit();
 }
 ?>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
 
 <!-- SIDEBAR --><aside class="fixed left-0 top-0 w-64 h-screen bg-[#1e202c] border-r border-[#31323e] flex flex-col py-6">
@@ -29,6 +30,27 @@ if (!isset($_SESSION["user_id"])) {
            class="block py-2 px-3 rounded-md hover:bg-[#31323e] hover:text-white transition">
             Product
         </a>
+<div x-data="{ open: false }" class="mt-2">
+
+    <button @click="open = !open" 
+        class="w-full flex justify-between items-center py-2 px-3 rounded-md hover:bg-[#31323e] hover:text-white transition">
+        <span>Warehouse</span>
+        <span x-text="open ? '-' : '+'"></span>
+    </button>
+
+    <div x-show="open" x-transition class="ml-4 mt-1">
+        <a href="http://localhost/StockMaster_OdooXSPIT/pages/warehouses/add.php" 
+           class="block py-2 px-3 rounded-md hover:bg-[#31323e] transition">
+            Add Warehouse
+        </a>
+
+        <a href="http://localhost/StockMaster_OdooXSPIT/pages/warehouses/list.php" 
+           class="block py-2 px-3 rounded-md hover:bg-[#31323e] transition">
+            View / Edit Warehouse
+        </a>
+    </div>
+
+</div>
 
         
        

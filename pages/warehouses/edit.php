@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssi", $name, $location, $id);
 
     if ($stmt->execute()) {
-        header("Location: warehouses_list.php");
+        header("Location:list.php");
         exit;
     } else {
         $message = "<p class='text-red-400'>Update failed!</p>";
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body class="bg-[var(--dark1)] text-[var(--light)]">
 
-<?php include '../includes/header.php'; ?>
+<?php include '../../includes/header.php'; ?>
 
 <main class="ml-64 p-8">
 

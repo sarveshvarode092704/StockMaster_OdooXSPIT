@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body class="bg-[var(--dark1)] text-[var(--light)]">
 
-<?php include '../includes/header.php'; ?>
+<?php include '../../includes/header.php'; ?>
 
 <main class="ml-64 p-8">
 <h1 class="text-2xl font-bold text-white mb-6">Add Warehouse</h1>
