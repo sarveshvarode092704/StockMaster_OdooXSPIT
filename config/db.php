@@ -1,6 +1,6 @@
 <?php
 // Database configuration
-$host = "srv595.hstgr.in";      // XAMPP/WAMP default
+$host = "srv595.hstgr.io";      // XAMPP/WAMP default
 $user = "u307056987_smsa";           // MySQL default user
 $pass = "Smsa@2027";               // MySQL default password (empty in XAMPP)
 $dbname = "u307056987_d2";           // MySQL default user
