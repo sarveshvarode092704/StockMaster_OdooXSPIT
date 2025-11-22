@@ -18,10 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssss", $name, $email, $password, $role);
 
     if ($stmt->execute()) {
-        $message = "<p class='text-green-400 text-center mb-4'>Signup Successful!</p>";
-    } else {
-        $message = "<p class='text-red-400 text-center mb-4'>Email already exists!</p>";
+    $message = "<p class='text-green-400 text-center mb-4'>Signup Successful!</p>";
+} else {
+    if ($conn->errno == 1062) {
+        echo "<script>alert('Email already exists!');</script>";
     }
+    $message = "<p class='text-red-400 text-center mb-4'>Email already exists!</p>";
+}
+
 
     $stmt->close();
 }
@@ -83,6 +87,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <button class="w-full py-3 rounded-lg bg-[var(--purple)] hover:bg-purple-700 transition text-white font-semibold">
         Sign Up
       </button>
+      <p class="text-center text-[var(--light)] mt-4">
+    Already have an account?
+    <a href="login.php" class="text-[var(--purple)] hover:underline">Login</a>
+</p>
+
     </form>
   </div>
 
