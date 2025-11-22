@@ -1,49 +1,126 @@
-<?php include "../../includes/header.php"; ?>
-<?php include "../../config/db.php"; ?>
+<?php 
+include "../../includes/header.php"; 
+include "../../config/db.php"; 
 
-<h1 class="text-2xl mb-4">Create Receipt</h1>
+// Auto-generate receipt number
+$last = $conn->query("SELECT id FROM receipts ORDER BY id DESC LIMIT 1")->fetch_assoc();
+$next = $last ? $last['id'] + 1 : 1;
+$receipt_no = "REC-" . str_pad($next, 4, "0", STR_PAD_LEFT);
+?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Create Receipt</title>
 
-<form action="../../actions/add_receipt_action.php" method="POST" enctype="multipart/form-data" class="space-y-4">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --dark1: #1e202c;
+      --dark2: #31323e;
+      --purple: #60519b;
+      --light: #bfc0d1;
+    }
+  </style>
+</head>
 
-    <input type="text" name="supplier" placeholder="Supplier Name" class="p-2 w-full rounded bg-[#31323e]" required>
+<body class="bg-[var(--dark1)] text-[var(--light)] min-h-screen">
+<main class="p-6 ml-64">
+<div class="max-w-3xl mx-auto bg-[var(--dark2)] p-8 rounded-2xl shadow-xl border border-[var(--purple)]">
 
-    <select name="warehouse_id" class="p-2 w-full rounded bg-[#31323e]" required>
-        <option>Select Warehouse</option>
-        <?php
-        $w = $conn->query("SELECT * FROM warehouses");
-        while($row = $w->fetch_assoc()){
-            echo "<option value='{$row['id']}'>{$row['name']}</option>";
-        }
-        ?>
-    </select>
+  <h1 class="text-3xl font-bold text-center text-white mb-6">Create Receipt</h1>
 
-    <label class="block">Upload Invoice (optional)</label>
-    <input type="file" name="invoice" class="p-2 w-full rounded bg-[#31323e]">
+  <!-- FORM START -->
+  <form action="/StockMaster_OdooXSPIT/actions/add_receipt_action.php" method="POST" class="space-y-6">
 
-    <div id="items">
-        <div class="flex gap-4">
-            <select name="product_id[]" class="p-2 rounded bg-[#31323e]">
-                <?php
-                $p = $conn->query("SELECT * FROM products");
-                while($prod = $p->fetch_assoc()){
-                    echo "<option value='{$prod['id']}'>{$prod['name']}</option>";
-                }
-                ?>
-            </select>
-            <input type="number" name="qty[]" class="p-2 rounded bg-[#31323e]" placeholder="Quantity" required>
-        </div>
+    <!-- Hidden receipt no -->
+    <input type="hidden" name="receipt_no" value="<?php echo htmlspecialchars($receipt_no); ?>">
+
+    <!-- Receipt No -->
+    <div>
+      <label class="block text-[var(--light)] mb-1">Receipt No</label>
+      <input type="text" value="<?php echo htmlspecialchars($receipt_no); ?>" 
+             disabled
+             class="w-full p-3 bg-[var(--dark1)] rounded-lg text-white border border-[var(--light)]">
     </div>
 
-    <button type="button" onclick="addRow()" class="px-3 py-1 bg-[#60519b] rounded">Add Item</button>
-    <button type="submit" class="px-4 py-2 bg-[#60519b] rounded text-white">Save Draft</button>
+    <!-- Supplier -->
+    <div>
+      <label class="block text-[var(--light)] mb-1">Supplier Name</label>
+      <input type="text" name="supplier" required
+             placeholder="Enter supplier name"
+             class="w-full p-3 bg-[var(--dark1)] rounded-lg text-white border border-[var(--light)]
+                    focus:ring-2 focus:ring-[var(--purple)] focus:border-[var(--purple)]">
+    </div>
 
-</form>
+    <!-- Warehouse -->
+    <div>
+      <label class="block text-[var(--light)] mb-1">Select Warehouse</label>
+      <select name="warehouse_id" required
+              class="w-full p-3 bg-[var(--dark1)] rounded-lg text-white border border-[var(--light)]">
+        <option value="">Choose warehouse</option>
+        <?php
+        $wh = $conn->query("SELECT * FROM warehouses");
+        while ($row = $wh->fetch_assoc()) {
+          echo "<option value='{$row['id']}'>" . htmlspecialchars($row['name']) . "</option>";
+        }
+        ?>
+      </select>
+    </div>
+
+    <!-- Items Header -->
+    <h2 class="text-xl font-semibold text-white mt-6">Items</h2>
+
+    <!-- Items Container -->
+    <div id="items" class="space-y-3">
+      <!-- Item Row -->
+      <div class="flex gap-4">
+        
+        <!-- Product -->
+        <select name="product_id[]"
+                class="w-1/2 p-3 bg-[var(--dark1)] rounded-lg text-white border border-[var(--light)]">
+          <?php
+          $p = $conn->query("SELECT * FROM products");
+          while ($prod = $p->fetch_assoc()) {
+            echo "<option value='{$prod['id']}'>" . htmlspecialchars($prod['name']) . "</option>";
+          }
+          ?>
+        </select>
+
+        <!-- Quantity -->
+        <input type="number" step="0.01" name="qty[]" required
+               placeholder="Quantity"
+               class="w-1/2 p-3 bg-[var(--dark1)] rounded-lg text-white border border-[var(--light)]
+                      focus:ring-2 focus:ring-[var(--purple)]">
+      </div>
+    </div>
+
+    <!-- Add Item Button -->
+    <button type="button" onclick="addRow()"
+            class="px-5 py-2 bg-[var(--purple)] text-white rounded-lg hover:bg-purple-700 transition">
+      + Add Item
+    </button>
+
+    <!-- Submit -->
+    <button type="submit"
+            class="w-full py-3 bg-[var(--purple)] text-white rounded-lg hover:bg-purple-700 transition text-lg font-semibold">
+      Save Receipt (Draft)
+    </button>
+
+  </form>
+  <!-- FORM END -->
+
+</div>
+</main>
 
 <script>
 function addRow() {
-    let clone = document.querySelector("#items div").cloneNode(true);
-    document.getElementById("items").appendChild(clone);
+  let row = document.querySelector("#items div").cloneNode(true);
+  document.getElementById("items").appendChild(row);
 }
 </script>
 
 <?php include "../../includes/footer.php"; ?>
+</body>
+</html>
