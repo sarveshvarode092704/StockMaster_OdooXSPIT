@@ -1,48 +1,48 @@
-<?php include "../../includes/header.php"; ?>
-<?php include "../../config/db.php"; ?>
+<?php
+include "../config/db.php";
 
-<h1 class="text-2xl mb-4">Create Delivery Order</h1>
-
-<form action="../../actions/add_delivery_action.php" method="POST" class="space-y-4">
-
-    <input type="text" name="customer" placeholder="Customer Name" 
-           class="p-2 w-full rounded bg-[#31323e]" required>
-
-    <select name="warehouse_id" class="p-2 w-full rounded bg-[#31323e]" required>
-        <option>Select Warehouse</option>
-        <?php
-        $w = $conn->query("SELECT * FROM warehouses");
-        while($row = $w->fetch_assoc()){
-            echo "<option value='{$row['id']}'>{$row['name']}</option>";
-        }
-        ?>
-    </select>
-
-    <div id="items">
-        <div class="flex gap-4">
-            <select name="product_id[]" class="p-2 rounded bg-[#31323e]">
-                <?php
-                $p = $conn->query("SELECT * FROM products");
-                while($prod = $p->fetch_assoc()){
-                    echo "<option value='{$prod['id']}'>{$prod['name']}</option>";
-                }
-                ?>
-            </select>
-            <input type="number" name="qty[]" class="p-2 rounded bg-[#31323e]" placeholder="Quantity" required>
-        </div>
-    </div>
-
-    <button type="button" onclick="addRow()" 
-            class="px-3 py-1 bg-[#60519b] rounded">Add Item</button>
-    <button type="submit" 
-            class="px-4 py-2 bg-[#60519b] rounded text-white">Save Draft</button>
-</form>
-
-<script>
-function addRow() {
-    let clone = document.querySelector("#items div").cloneNode(true);
-    document.getElementById("items").appendChild(clone);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: /StockMaster_OdooXSPIT/pages/deliveries/create.php?error=invalid_request");
+    exit;
 }
-</script>
 
-<?php include "../../includes/footer.php"; ?>
+$delivery_no = trim($_POST['delivery_no'] ?? '');
+$customer = trim($_POST['customer'] ?? '');
+$warehouse_id = intval($_POST['warehouse_id'] ?? 0);
+$products = $_POST['product_id'] ?? [];
+$qtys = $_POST['qty'] ?? [];
+
+if ($delivery_no === '' || $customer === '' || $warehouse_id === 0 || count($products) === 0) {
+    header("Location: /StockMaster_OdooXSPIT/pages/deliveries/create.php?error=missing_fields");
+    exit;
+}
+
+$conn->begin_transaction();
+
+try {
+    $stmt = $conn->prepare("INSERT INTO deliveries (delivery_no, customer, warehouse_id, status, created_at) VALUES (?, ?, ?, 'Draft', NOW())");
+    $stmt->bind_param("ssi", $delivery_no, $customer, $warehouse_id);
+    $stmt->execute();
+    $delivery_id = $stmt->insert_id;
+    $stmt->close();
+
+    $itemStmt = $conn->prepare("INSERT INTO delivery_items (delivery_id, product_id, quantity) VALUES (?, ?, ?)");
+    for ($i = 0; $i < count($products); $i++) {
+        $pid = intval($products[$i]);
+        $q = floatval($qtys[$i] ?? 0);
+        if ($pid > 0 && $q > 0) {
+            $itemStmt->bind_param("iid", $delivery_id, $pid, $q);
+            $itemStmt->execute();
+        }
+    }
+    $itemStmt->close();
+
+    $conn->commit();
+    header("Location: /StockMaster_OdooXSPIT/pages/deliveries/view.php?id=$delivery_id");
+    exit;
+} catch (Exception $e) {
+    $conn->rollback();
+    error_log("Add delivery failed: " . $e->getMessage());
+    header("Location: /StockMaster_OdooXSPIT/pages/deliveries/create.php?error=save_failed");
+    exit;
+}

@@ -1,45 +1,138 @@
 <?php include "../../includes/header.php"; ?>
 <?php include "../../config/db.php"; ?>
 
-<?php
-$id = $_GET['id'];
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-$t = $conn->query("
-    SELECT t.*, ws.name AS source_name, wd.name AS dest_name 
+<style>
+  :root {
+    --dark1: #1e202c;
+    --purple: #60519b;
+    --dark2: #31323e;
+    --light: #bfc0d1;
+  }
+</style>
+
+<?php
+// Validate ID
+if (!isset($_GET["id"]) || !is_numeric($_GET["id"])) {
+    echo "<div class='ml-64 p-10 text-red-400 text-xl'>Invalid Transfer ID</div>";
+    include "../../includes/footer.php";
+    exit;
+}
+
+$id = intval($_GET["id"]);
+
+// Fetch transfer
+$transfer = $conn->query("
+    SELECT t.*, 
+        ws.name AS source_name, 
+        wd.name AS dest_name
     FROM transfers t
-    JOIN warehouses ws ON ws.id = t.source_warehouse
-    JOIN warehouses wd ON wd.id = t.destination_warehouse
+    JOIN warehouses ws ON t.source_warehouse = ws.id
+    JOIN warehouses wd ON t.destination_warehouse = wd.id
     WHERE t.id = $id
 ")->fetch_assoc();
 
-$items = $conn->query("SELECT * FROM transfer_items WHERE transfer_id=$id");
+if (!$transfer) {
+    echo "<div class='ml-64 p-10 text-red-400 text-xl'>Transfer Not Found</div>";
+    include "../../includes/footer.php";
+    exit;
+}
+
+// Fetch transfer items
+$items = $conn->query("
+    SELECT ti.*, p.name AS product_name
+    FROM transfer_items ti
+    JOIN products p ON ti.product_id = p.id
+    WHERE ti.transfer_id = $id
+");
 ?>
 
-<h1 class="text-2xl mb-4">Transfer #<?php echo $id; ?></h1>
+<div class="ml-64 p-10 text-[var(--light)]">
 
-<p>Source: <?php echo $t['source_name']; ?></p>
-<p>Destination: <?php echo $t['dest_name']; ?></p>
-<p>Status: <?php echo $t['status']; ?></p>
+    <h1 class="text-3xl font-bold text-white mb-6">Transfer #<?= $id ?></h1>
 
-<table class="w-full mt-4">
-<tr class="bg-[#60519b] text-white">
-    <th>Product</th>
-    <th>Quantity</th>
-</tr>
+    <!-- Transfer Summary -->
+    <div class="bg-[var(--dark2)] p-8 rounded-2xl border border-[var(--purple)] shadow-xl mb-8">
 
-<?php while ($i = $items->fetch_assoc()) { ?>
-<tr class="border-b border-[#31323e]">
-    <td><?php echo $i['product_id']; ?></td>
-    <td><?php echo $i['quantity']; ?></td>
-</tr>
-<?php } ?>
-</table>
+        <div class="grid grid-cols-2 gap-6">
 
-<?php if ($t['status'] == "Draft") { ?>
-<form action="../../actions/validate_transfer_action.php" method="POST" class="mt-6">
-    <input type="hidden" name="id" value="<?php echo $id; ?>">
-    <button class="px-4 py-2 bg-blue-600 text-white rounded">Validate Transfer</button>
-</form>
-<?php } ?>
+            <div>
+                <p class="text-lg"><span class="font-semibold text-white">Source:</span> 
+                    <?= htmlspecialchars($transfer["source_name"]) ?>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-lg"><span class="font-semibold text-white">Destination:</span> 
+                    <?= htmlspecialchars($transfer["dest_name"]) ?>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-lg"><span class="font-semibold text-white">Status:</span> 
+                    <span class="px-3 py-1 rounded bg-[var(--purple)] text-white">
+                        <?= $transfer["status"] ?>
+                    </span>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-lg"><span class="font-semibold text-white">Created:</span> 
+                    <?= $transfer["created_at"] ?>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="bg-[var(--dark2)] p-8 rounded-2xl border border-[var(--purple)] shadow-xl">
+
+        <h2 class="text-2xl font-semibold mb-4 text-white">Products</h2>
+
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-[var(--purple)] text-white">
+                    <th class="py-3 px-3">Product</th>
+                    <th class="py-3 px-3">Quantity</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <?php 
+                if ($items->num_rows == 0) {
+                    echo "
+                    <tr>
+                        <td colspan='2' class='py-4 text-center text-[var(--light)]'>
+                            No items found for this transfer.
+                        </td>
+                    </tr>";
+                }
+
+                while ($i = $items->fetch_assoc()) { ?>
+                    <tr class="border-b border-[#31323e] hover:bg-[#2a2b38] transition">
+                        <td class="py-3 px-3"><?= htmlspecialchars($i["product_name"]) ?></td>
+                        <td class="py-3 px-3"><?= $i["quantity"] ?></td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Validate Button -->
+    <?php if ($transfer["status"] === "Draft") { ?>
+        <form action="../../actions/validate_transfer_action.php" method="POST" class="mt-6">
+            <input type="hidden" name="id" value="<?= $id ?>">
+
+            <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold
+                           hover:bg-green-700 transition">
+                Validate Transfer
+            </button>
+        </form>
+    <?php } ?>
+
+</div>
 
 <?php include "../../includes/footer.php"; ?>
