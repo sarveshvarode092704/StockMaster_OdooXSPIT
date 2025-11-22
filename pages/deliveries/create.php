@@ -1,42 +1,193 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Delivery</title>
+
+<!-- TAILWIND + YOUR COLORS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        dark1: "#1e202c",
+        purple: "#60519b",
+        dark2: "#31323e",
+        light: "#bfc0d1",
+      }
+    }
+  }
+}
+</script>
+
+</head>
+
+<body class="bg-dark1 text-light">
+
 <?php include "../../includes/header.php"; ?>
-<?php include "../../config/db.php"; ?>
 
-<h1 class="text-2xl mb-4">Create Delivery Order</h1>
+<!-- MAIN CONTENT -->
+<div class="ml-64 p-8">
 
-<form action="../../actions/add_delivery_action.php" method="POST" class="space-y-4">
+    <h1 class="text-3xl font-bold mb-6 text-light">Create Delivery Order</h1>
 
-    <input type="text" name="customer" placeholder="Customer Name" 
-           class="p-2 w-full rounded bg-[#31323e]" required>
+    <form action="../../actions/add_delivery_action.php" method="POST" class="space-y-6">
 
-    <select name="warehouse_id" class="p-2 w-full rounded bg-[#31323e]" required>
-        <option>Select Warehouse</option>
-        <?php
-        $w = $conn->query("SELECT * FROM warehouses");
-        while($row = $w->fetch_assoc()){
-            echo "<option value='{$row['id']}'>{$row['name']}</option>";
-        }
-        ?>
-    </select>
+        <!-- Customer Name -->
+        <div>
+            <label class="block mb-1 font-semibold">Customer Name</label>
+            <input type="text" name="customer"
+                   class="p-3 w-full rounded-xl bg-dark2 border border-dark2 focus:outline-none focus:ring focus:ring-purple"
+                   placeholder="Enter customer name" required>
+        </div>
 
-    <div id="items">
-        <div class="flex gap-4">
-            <select name="product_id[]" class="p-2 rounded bg-[#31323e]">
+        <!-- Warehouse Select -->
+        <div>
+            <label class="block mb-1 font-semibold">Select Warehouse</label>
+            <select name="warehouse_id"
+                    class="p-3 w-full rounded-xl bg-dark2 border border-dark2 focus:outline-none focus:ring focus:ring-purple" required>
+                <option value="">Choose Warehouse</option>
+
                 <?php
-                $p = $conn->query("SELECT * FROM products");
-                while($prod = $p->fetch_assoc()){
-                    echo "<option value='{$prod['id']}'>{$prod['name']}</option>";
+                $w = $conn->query("SELECT * FROM warehouses");
+                while($row = $w->fetch_assoc()){
+                    echo "<option value='{$row['id']}'>{$row['name']}</option>";
                 }
                 ?>
             </select>
-            <input type="number" name="qty[]" class="p-2 rounded bg-[#31323e]" placeholder="Quantity" required>
         </div>
-    </div>
 
-    <button type="button" onclick="addRow()" 
-            class="px-3 py-1 bg-[#60519b] rounded">Add Item</button>
-    <button type="submit" 
-            class="px-4 py-2 bg-[#60519b] rounded text-white">Save Draft</button>
-</form>
+        <!-- Items -->
+        <div id="items" class="space-y-3">
+
+            <div class="flex gap-4">
+                <!-- Product Dropdown -->
+                <select name="product_id[]"
+                        class="p-3 w-1/2 rounded-xl bg-dark2 border border-dark2 focus:outline-none focus:ring focus:ring-purple">
+                    <?php
+                    $p = $conn->query("SELECT * FROM products");
+                    while($prod = $p->fetch_assoc()){
+                        echo "<option value='{$prod['id']}'>{$prod['name']}</option>";
+                    }
+                    ?>
+                </select>
+
+                <!-- Quantity -->
+                <input type="number" name="qty[]"
+                       class="p-3 w-1/2 rounded-xl bg-dark2 border border-dark2 focus:outline-none focus:ring focus:ring-purple"
+                       placeholder="Quantity" required>
+            </div>
+
+        </div>
+
+        <!-- Add More Items -->
+        <button type="button" onclick="addRow()"
+                class="px-4 py-2 bg-purple text-white rounded-xl hover:bg-purple/80 transition">
+            + Add Item
+        </button>
+
+        <!-- Submit -->
+        <button type="submit"
+                class="px-6 py-3 bg-purple text-white rounded-xl font-semibold hover:bg-purple/80 transition">
+            Save Draft
+        </button>
+
+    </form>
+
+</div>
+
+<!-- JS -->
+<script>
+function addRow() {
+    let clone = document.querySelector("#items div").cloneNode(true);
+    document.getElementById("items").appendChild(clone);
+}
+</script>
+
+<?php include "../../includes/footer.php"; ?>
+
+</body>
+</html>
+
+          light: "#bfc0d1",
+        }
+      }
+    }
+  }
+</script>
+
+
+<div class="ml-64 p-8 text-[#bfc0d1]"> <!-- Main Content with Sidebar Offset -->
+
+    <h1 class="text-3xl font-bold mb-6">Create Delivery Order</h1>
+
+    <form action="../../actions/add_delivery_action.php" method="POST" class="space-y-6">
+
+        <!-- Customer Name -->
+        <div>
+            <label class="block mb-1 font-semibold">Customer Name</label>
+            <input type="text" name="customer" 
+                   class="p-3 w-full rounded-xl bg-[#262836] border border-[#31323e] focus:outline-none focus:ring focus:ring-[#60519b]" 
+                   placeholder="Enter customer name" required>
+        </div>
+
+        <!-- Warehouse Select -->
+        <div>
+            <label class="block mb-1 font-semibold">Select Warehouse</label>
+            <select name="warehouse_id" 
+                    class="p-3 w-full rounded-xl bg-[#262836] border border-[#31323e] focus:outline-none focus:ring focus:ring-[#60519b]" required>
+                <option value="">Choose Warehouse</option>
+
+                <?php
+                $w = $conn->query("SELECT * FROM warehouses");
+                while($row = $w->fetch_assoc()){
+                    echo "<option value='{$row['id']}'>{$row['name']}</option>";
+                }
+                ?>
+            </select>
+        </div>
+
+        <!-- Item List -->
+        <div id="items" class="space-y-3">
+
+            <div class="flex gap-4">
+                <!-- Product Dropdown -->
+                <select name="product_id[]" 
+                        class="p-3 w-1/2 rounded-xl bg-[#262836] border border-[#31323e] focus:outline-none focus:ring focus:ring-[#60519b]">
+                    <?php
+                    $p = $conn->query("SELECT * FROM products");
+                    while($prod = $p->fetch_assoc()){
+                        echo "<option value='{$prod['id']}'>{$prod['name']}</option>";
+                    }
+                    ?>
+                </select>
+
+                <!-- Quantity -->
+                <input type="number" name="qty[]" 
+                       class="p-3 w-1/2 rounded-xl bg-[#262836] border border-[#31323e] focus:outline-none focus:ring focus:ring-[#60519b]" 
+                       placeholder="Quantity" required>
+            </div>
+
+        </div>
+
+        <!-- Add Item Button -->
+        <button type="button" onclick="addRow()" 
+                class="px-4 py-2 bg-[#60519b] rounded-xl text-white hover:bg-[#6b5ac4] transition">
+            + Add Item
+        </button>
+
+        <!-- Submit -->
+        <button type="submit" 
+                class="px-6 py-3 bg-[#60519b] rounded-xl text-white font-semibold hover:bg-[#6b5ac4] transition">
+            Save Draft
+        </button>
+
+    </form>
+
+</div>
 
 <script>
 function addRow() {
