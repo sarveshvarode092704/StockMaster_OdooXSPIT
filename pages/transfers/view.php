@@ -23,14 +23,14 @@ if (!isset($_GET["id"]) || !is_numeric($_GET["id"])) {
 
 $id = intval($_GET["id"]);
 
-// Fetch transfer
+// Fetch transfer (FIXED COLUMN NAMES)
 $transfer = $conn->query("
     SELECT t.*, 
-        ws.name AS source_name, 
-        wd.name AS dest_name
+           ws.name AS source_name, 
+           wd.name AS dest_name
     FROM transfers t
-    JOIN warehouses ws ON t.source_warehouse = ws.id
-    JOIN warehouses wd ON t.destination_warehouse = wd.id
+    JOIN warehouses ws ON t.from_warehouse = ws.id
+    JOIN warehouses wd ON t.to_warehouse = wd.id
     WHERE t.id = $id
 ")->fetch_assoc();
 
@@ -40,7 +40,7 @@ if (!$transfer) {
     exit;
 }
 
-// Fetch transfer items
+// Fetch items
 $items = $conn->query("
     SELECT ti.*, p.name AS product_name
     FROM transfer_items ti
@@ -59,38 +59,42 @@ $items = $conn->query("
         <div class="grid grid-cols-2 gap-6">
 
             <div>
-                <p class="text-lg"><span class="font-semibold text-white">Source:</span> 
-                    <?= htmlspecialchars($transfer["source_name"]) ?>
+                <p class="text-lg">
+                    <span class="font-semibold text-white">Source Warehouse:</span><br>
+                    <?= htmlspecialchars($transfer["source_name"]); ?>
                 </p>
             </div>
 
             <div>
-                <p class="text-lg"><span class="font-semibold text-white">Destination:</span> 
-                    <?= htmlspecialchars($transfer["dest_name"]) ?>
+                <p class="text-lg">
+                    <span class="font-semibold text-white">Destination Warehouse:</span><br>
+                    <?= htmlspecialchars($transfer["dest_name"]); ?>
                 </p>
             </div>
 
             <div>
-                <p class="text-lg"><span class="font-semibold text-white">Status:</span> 
+                <p class="text-lg">
+                    <span class="font-semibold text-white">Status:</span><br>
                     <span class="px-3 py-1 rounded bg-[var(--purple)] text-white">
-                        <?= $transfer["status"] ?>
+                        <?= $transfer["status"]; ?>
                     </span>
                 </p>
             </div>
 
             <div>
-                <p class="text-lg"><span class="font-semibold text-white">Created:</span> 
-                    <?= $transfer["created_at"] ?>
+                <p class="text-lg">
+                    <span class="font-semibold text-white">Created At:</span><br>
+                    <?= $transfer["created_at"]; ?>
                 </p>
             </div>
 
         </div>
     </div>
 
-    <!-- Items Table -->
+    <!-- Products Table -->
     <div class="bg-[var(--dark2)] p-8 rounded-2xl border border-[var(--purple)] shadow-xl">
 
-        <h2 class="text-2xl font-semibold mb-4 text-white">Products</h2>
+        <h2 class="text-2xl font-semibold mb-4 text-white">Products in Transfer</h2>
 
         <table class="w-full text-left">
             <thead>
@@ -101,7 +105,7 @@ $items = $conn->query("
             </thead>
 
             <tbody>
-                <?php 
+                <?php
                 if ($items->num_rows == 0) {
                     echo "
                     <tr>
@@ -111,23 +115,24 @@ $items = $conn->query("
                     </tr>";
                 }
 
-                while ($i = $items->fetch_assoc()) { ?>
-                    <tr class="border-b border-[#31323e] hover:bg-[#2a2b38] transition">
-                        <td class="py-3 px-3"><?= htmlspecialchars($i["product_name"]) ?></td>
-                        <td class="py-3 px-3"><?= $i["quantity"] ?></td>
-                    </tr>
-                <?php } ?>
+                while ($i = $items->fetch_assoc()) {
+                    echo "
+                    <tr class='border-b border-[#31323e] hover:bg-[#2a2b38] transition'>
+                        <td class='py-3 px-3'>" . htmlspecialchars($i["product_name"]) . "</td>
+                        <td class='py-3 px-3'>" . $i["quantity"] . "</td>
+                    </tr>";
+                }
+                ?>
             </tbody>
         </table>
     </div>
 
-    <!-- Validate Button -->
+    <!-- Validate Transfer -->
     <?php if ($transfer["status"] === "Draft") { ?>
         <form action="../../actions/validate_transfer_action.php" method="POST" class="mt-6">
             <input type="hidden" name="id" value="<?= $id ?>">
 
-            <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold
-                           hover:bg-green-700 transition">
+            <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
                 Validate Transfer
             </button>
         </form>
